@@ -1,0 +1,486 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Digital Library</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --reader-bg: #ffffff;
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --bg: #111827;
+            --card-bg: #1f2937;
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --reader-bg: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            transition: var(--transition);
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .nav-links button {
+            background: none;
+            border: none;
+            color: var(--text);
+            margin-left: 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Home Page - Book Grid */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 320px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .book-info {
+            padding: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .book-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-author {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .read-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .read-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Book Reader Page */
+        .reader-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .reading-area {
+            background: var(--reader-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            max-width: 800px;
+            margin: 0 auto;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Login Page */
+        .login-card {
+            max-width: 400px;
+            margin: 4rem auto;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-card h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .reading-area {
+                padding: 1.5rem;
+            }
+            .nav-links button span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="navigateTo('home')">Lumina Library</div>
+        <div class="nav-links">
+            <button onclick="toggleDarkMode()" id="modeToggle">🌙 <span>Dark Mode</span></button>
+            <button onclick="navigateTo('login')">👤 <span>Login</span></button>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Home Page -->
+        <section id="home" class="page active">
+            <h1>Featured Collection</h1>
+            <div class="book-grid" id="bookGrid">
+                <!-- Books will be injected here -->
+            </div>
+        </section>
+
+        <!-- Book Reader Page -->
+        <section id="reader" class="page">
+            <div class="reader-controls">
+                <button class="icon-btn" onclick="navigateTo('home')">← Back to Library</button>
+                <div class="control-group">
+                    <button class="icon-btn" onclick="adjustFontSize(-2)">A-</button>
+                    <button class="icon-btn" onclick="adjustFontSize(2)">A+</button>
+                </div>
+            </div>
+            <h1 id="readerTitle" style="text-align: center; margin-bottom: 2rem;">Book Title</h1>
+            <div class="reading-area" id="readingContent">
+                <!-- Content injected here -->
+            </div>
+        </section>
+
+        <!-- Login Page -->
+        <section id="login" class="page">
+            <div class="login-card">
+                <h2>Welcome Back</h2>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••">
+                </div>
+                <button class="login-btn" onclick="mockLogin()">Sign In</button>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                    Don't have an account? <a href="#" style="color: var(--primary);">Sign up</a>
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Mock Data
+        const books = [
+            {
+                id: 1,
+                title: "The Great Adventure",
+                author: "Jane Doe",
+                cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400",
+                content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            },
+            {
+                id: 2,
+                title: "Mystery of the Void",
+                author: "John Smith",
+                cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400",
+                content: "Deep in the heart of the galaxy, a secret waited for eons. Captain Orion stared at the display, the readings making no sense. 'It's impossible,' he whispered. The void wasn't empty; it was screaming. This chapter explores the initial discovery of the subspace signals that would eventually change humanity's understanding of physics forever..."
+            },
+            {
+                id: 3,
+                title: "The Silent Forest",
+                author: "Elena Rigby",
+                cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=400",
+                content: "The trees stood like ancient sentinels, their leaves hushed by an unnatural wind. Elena stepped cautiously over a mossy log. She had been warned never to enter the grove after sunset, but the locket was too precious to lose. Every snap of a twig sounded like a gunshot in the absolute stillness of the woods..."
+            }
+        ];
+
+        let currentFontSize = 18;
+
+        // Navigation Logic
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // Initialize Library
+        function loadBooks() {
+            const grid = document.getElementById('bookGrid');
+            grid.innerHTML = books.map(book => `
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="${book.cover}" alt="${book.title}" onerror="this.src='https://via.placeholder.com/400x600?text=No+Cover'">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">by ${book.author}</div>
+                        <button class="read-btn" onclick="openBook(${book.id})">Read Book</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open Book Reader
+        function openBook(id) {
+            const book = books.find(b => b.id === id);
+            if(book) {
+                document.getElementById('readerTitle').innerText = book.title;
+                document.getElementById('readingContent').innerHTML = `
+                    <p>${book.content}</p>
+                    <p style="margin-top: 2rem;">${book.content}</p>
+                    <p style="margin-top: 2rem;">${book.content}</p>
+                `;
+                navigateTo('reader');
+            }
+        }
+
+        // Font Adjustments
+        function adjustFontSize(delta) {
+            currentFontSize += delta;
+            if (currentFontSize < 12) currentFontSize = 12;
+            if (currentFontSize > 32) currentFontSize = 32;
+            document.getElementById('readingContent').style.fontSize = currentFontSize + 'px';
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.getElementById('modeToggle');
+            const isDark = document.body.classList.contains('dark-mode');
+            btn.innerHTML = isDark ? '☀️ <span>Light Mode</span>' : '🌙 <span>Dark Mode</span>';
+        }
+
+        // Mock Login
+        function mockLogin() {
+            const message = document.createElement('div');
+            message.style.cssText = "position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 1rem; border-radius: 8px; z-index: 1000;";
+            message.innerText = "Login Successful! (Demo)";
+            document.body.appendChild(message);
+            setTimeout(() => {
+                message.remove();
+                navigateTo('home');
+            }, 2000);
+        }
+
+        // On Load
+        window.onload = loadBooks;
+
+    </script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDBqoCwIjNIQeFCI8vjmaOMf3yJmJlIF44",
+  authDomain: "library-app-712f3.firebaseapp.com",
+  projectId: "library-app-712f3",
+  storageBucket: "library-app-712f3.firebasestorage.app",
+  messagingSenderId: "616668243104",
+  appId: "1:616668243104:web:b291d52b5e7bea586715c5"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Register
+function register() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Registered Successfully!");
+      navigateTo('home');
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
+
+// Login
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Login Successful!");
+      navigateTo('home');
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
+
+// Logout
+function logout() {
+  auth.signOut().then(() => {
+    navigateTo('login');
+  });
+}
+
+// Auto check login
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    navigateTo('home');
+  } else {
+    navigateTo('login');
+  }
+});
+</script>
+</body>
+</html>
+
