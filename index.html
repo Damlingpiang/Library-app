@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth - Premium Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Poppins', sans-serif; background: #f4f6fc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .auth-card { background: #ffffff; width: 100%; max-width: 400px; border-radius: 40px; padding: 40px 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); text-align: center; }
+        .profile-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #ff99ff 0%, #6666ff 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; }
+        .title { font-size: 28px; font-weight: 700; color: #332d5b; margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .label { font-weight: 600; color: #332d5b; font-size: 13px; display: block; margin-bottom: 5px;}
+        .input-container { position: relative; }
+        .input-field { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid #f0f0f0; border-radius: 12px; font-size: 14px; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: #6666ff; }
+        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #8b8bb5; }
+        .action-btn { width: 100%; background: linear-gradient(90deg, #ec66ff 0%, #6666ff 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .action-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .toggle-link { color: #5c59ff; font-weight: 600; cursor: pointer; }
+        #toast { visibility: hidden; min-width: 250px; background: #332d5b; color: #fff; text-align: center; border-radius: 10px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #toast.show { visibility: visible; animation: fadein 0.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div id="cardContent">
+            <!-- Dynamic Content -->
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        let isLoginView = true;
+
+        function renderView() {
+            const container = document.getElementById('cardContent');
+            if (isLoginView) {
+                container.innerHTML = `
+                    <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
+                    <h1 class="title">Welcome Back</h1>
+                    <form onsubmit="handleAuth(event, '/api/login')">
+                        <div class="input-group">
+                            <label class="label">Email</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="input-field" placeholder="test@example.com" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Password</label>
+                            <div class="input-container">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" name="password" class="input-field" placeholder="password123" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="action-btn" id="submitBtn">Log In</button>
+                    </form>
+                    <p class="mt-6 text-sm text-gray-500">
+                        New here? <span class="toggle-link" onclick="toggleView()">Create Account</span>
+                    </p>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="profile-icon"><i class="fa-solid fa-user-plus"></i></div>
+                    <h1 class="title">Join Us</h1>
+                    <form onsubmit="handleAuth(event, '/api/signup')">
+                        <div class="input-group">
+                            <label class="label">Full Name</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                <input type="text" name="name" class="input-field" placeholder="Your Name" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Email</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="input-field" placeholder="Email Address" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Password</label>
+                            <div class="input-container">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" name="password" class="input-field" placeholder="Create Password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="action-btn" id="submitBtn">Sign Up</button>
+                    </form>
+                    <p class="mt-6 text-sm text-gray-500">
+                        Already have an account? <span class="toggle-link" onclick="toggleView()">Log In</span>
+                    </p>
+                `;
+            }
+        }
+
+        async function handleAuth(event, endpoint) {
+            event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message);
+                    setTimeout(() => window.location.href = result.redirect, 1000);
+                } else {
+                    showToast(result.message || "An error occurred");
+                }
+            } catch (error) {
+                showToast("Server connection failed");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isLoginView ? "Log In" : "Sign Up";
+            }
+        }
+
+        function toggleView() { isLoginView = !isLoginView; renderView(); }
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = ""; }, 3000);
+        }
+
+        window.onload = renderView;
+    </script>
+</body>
+</html>
