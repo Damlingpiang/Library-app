@@ -1,3 +1,4 @@
-
 Flask
+Flask-Cors
 gunicorn
+3.  **Start Command:** On Render, set your start command to: `gunicorn app:app`
