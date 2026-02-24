@@ -8,375 +8,139 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f4f6fc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-        .auth-card {
-            background: #ffffff;
-            width: 100%;
-            max-width: 400px;
-            border-radius: 40px;
-            padding: 40px 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .profile-icon {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #ff99ff 0%, #6666ff 100%);
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 50px;
-            box-shadow: 0 10px 20px rgba(102, 102, 255, 0.2);
-            border: 4px solid #fff;
-            outline: 1px solid #f0f0f0;
-        }
-
-        .title {
-            font-size: 32px;
-            font-weight: 700;
-            color: #332d5b;
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .input-label-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .label {
-            font-weight: 600;
-            color: #332d5b;
-            font-size: 14px;
-        }
-
-        .forgot-link {
-            font-size: 12px;
-            color: #8b8bb5;
-            text-decoration: none;
-        }
-
-        .input-container {
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            border-radius: 15px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 16px 16px 16px 48px;
-            border: 1px solid #f0f0f0;
-            border-radius: 15px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-            color: #332d5b;
-        }
-
-        .input-field:focus {
-            border-color: #6666ff;
-        }
-
-        .input-field::placeholder {
-            color: #c0c0d5;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8b8bb5;
-            font-size: 18px;
-        }
-
-        .action-btn {
-            width: 100%;
-            background: linear-gradient(90deg, #ec66ff 0%, #6666ff 100%);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            box-shadow: 0 8px 20px rgba(102, 102, 255, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-        }
-
-        .action-btn:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 30px 0;
-            color: #8b8bb5;
-            font-size: 13px;
-        }
-
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #e6e6f2;
-        }
-
-        .divider span {
-            padding: 0 10px;
-        }
-
-        .social-row {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .social-btn {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 1px solid #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
-        }
-
-        .social-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .facebook-icon {
-            color: #1877F2;
-            font-size: 28px;
-        }
-
-        .footer-text {
-            color: #8b8bb5;
-            font-size: 14px;
-        }
-
-        .toggle-link {
-            color: #5c59ff;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .toggle-link i {
-            font-size: 10px;
-            margin-left: 5px;
-        }
-
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #332d5b;
-            color: #fff;
-            text-align: center;
-            border-radius: 12px;
-            padding: 16px;
-            position: fixed;
-            z-index: 100;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-
+        body { font-family: 'Poppins', sans-serif; background: #f4f6fc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .auth-card { background: #ffffff; width: 100%; max-width: 400px; border-radius: 40px; padding: 40px 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); text-align: center; }
+        .profile-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #ff99ff 0%, #6666ff 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; }
+        .title { font-size: 28px; font-weight: 700; color: #332d5b; margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .label { font-weight: 600; color: #332d5b; font-size: 13px; display: block; margin-bottom: 5px;}
+        .input-container { position: relative; }
+        .input-field { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid #f0f0f0; border-radius: 12px; font-size: 14px; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: #6666ff; }
+        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #8b8bb5; }
+        .action-btn { width: 100%; background: linear-gradient(90deg, #ec66ff 0%, #6666ff 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .action-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .toggle-link { color: #5c59ff; font-weight: 600; cursor: pointer; }
+        #toast { visibility: hidden; min-width: 250px; background: #332d5b; color: #fff; text-align: center; border-radius: 10px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        #toast.show { visibility: visible; animation: fadein 0.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* Animation for page switching */
-        .fade-content {
-            animation: fadeInScale 0.4s ease-out;
-        }
-
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
     </style>
 </head>
 <body>
 
-    <div class="auth-card" id="authCard">
-        <div id="cardContent" class="fade-content">
-            <!-- Content will be injected here by JS -->
+    <div class="auth-card">
+        <div id="cardContent">
+            <!-- Dynamic Content -->
         </div>
     </div>
 
-    <div id="toast">Action successful!</div>
+    <div id="toast"></div>
 
     <script>
         let isLoginView = true;
 
-        const cardContent = document.getElementById('cardContent');
-
         function renderView() {
-            // Apply a small transition effect
-            cardContent.style.opacity = '0';
-            
-            setTimeout(() => {
-                if (isLoginView) {
-                    cardContent.innerHTML = `
-                        <div class="profile-icon">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <h1 class="title">Login</h1>
-                        <form onsubmit="handleAuth(event, 'Login')">
-                            <div class="input-group">
-                                <div class="input-label-row">
-                                    <label class="label">Email</label>
-                                    <a href="#" class="forgot-link">Forgot password?</a>
-                                </div>
-                                <div class="input-container">
-                                    <i class="fa-regular fa-envelope input-icon"></i>
-                                    <input type="email" class="input-field" placeholder="Enter your email" required>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <div class="input-label-row">
-                                    <label class="label">Password</label>
-                                </div>
-                                <div class="input-container">
-                                    <i class="fa-solid fa-lock input-icon"></i>
-                                    <input type="password" class="input-field" placeholder="Enter your password" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="action-btn">Log In</button>
-                        </form>
-                        <div class="divider"><span>or continue with</span></div>
-                        <div class="social-row">
-                            <div class="social-btn" onclick="socialLogin('Google')">
-                                <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
-                            </div>
-                            <div class="social-btn" onclick="socialLogin('Facebook')">
-                                <i class="fa-brands fa-facebook-f facebook-icon"></i>
+            const container = document.getElementById('cardContent');
+            if (isLoginView) {
+                container.innerHTML = `
+                    <div class="profile-icon"><i class="fa-solid fa-user"></i></div>
+                    <h1 class="title">Welcome Back</h1>
+                    <form onsubmit="handleAuth(event, '/api/login')">
+                        <div class="input-group">
+                            <label class="label">Email</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="input-field" placeholder="test@example.com" required>
                             </div>
                         </div>
-                        <p class="footer-text">
-                            Not registered yet? <span class="toggle-link" onclick="toggleView()">Sign Up <i class="fa-solid fa-chevron-right"></i></span>
-                        </p>
-                    `;
-                } else {
-                    cardContent.innerHTML = `
-                        <div class="profile-icon">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <h1 class="title">Sign Up</h1>
-                        <form onsubmit="handleAuth(event, 'Signup')">
-                            <div class="input-group">
-                                <div class="input-label-row">
-                                    <label class="label">Name</label>
-                                </div>
-                                <div class="input-container">
-                                    <i class="fa-regular fa-user input-icon"></i>
-                                    <input type="text" class="input-field" placeholder="Enter your name" required>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <div class="input-label-row">
-                                    <label class="label">Email</label>
-                                </div>
-                                <div class="input-container">
-                                    <i class="fa-regular fa-envelope input-icon"></i>
-                                    <input type="email" class="input-field" placeholder="Enter your email" required>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <div class="input-label-row">
-                                    <label class="label">Password</label>
-                                </div>
-                                <div class="input-container">
-                                    <i class="fa-solid fa-lock input-icon"></i>
-                                    <input type="password" class="input-field" placeholder="Create a password" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="action-btn">Sign Up</button>
-                        </form>
-                        <div class="divider"><span>or continue with</span></div>
-                        <div class="social-row">
-                            <div class="social-btn" onclick="socialLogin('Google')">
-                                <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
-                            </div>
-                            <div class="social-btn" onclick="socialLogin('Facebook')">
-                                <i class="fa-brands fa-facebook-f facebook-icon"></i>
+                        <div class="input-group">
+                            <label class="label">Password</label>
+                            <div class="input-container">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" name="password" class="input-field" placeholder="password123" required>
                             </div>
                         </div>
-                        <p class="footer-text">
-                            Already have an account? <span class="toggle-link" onclick="toggleView()">Log In <i class="fa-solid fa-chevron-right"></i></span>
-                        </p>
-                    `;
-                }
-                cardContent.style.opacity = '1';
-            }, 200);
+                        <button type="submit" class="action-btn" id="submitBtn">Log In</button>
+                    </form>
+                    <p class="mt-6 text-sm text-gray-500">
+                        New here? <span class="toggle-link" onclick="toggleView()">Create Account</span>
+                    </p>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="profile-icon"><i class="fa-solid fa-user-plus"></i></div>
+                    <h1 class="title">Join Us</h1>
+                    <form onsubmit="handleAuth(event, '/api/signup')">
+                        <div class="input-group">
+                            <label class="label">Full Name</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                <input type="text" name="name" class="input-field" placeholder="Your Name" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Email</label>
+                            <div class="input-container">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" name="email" class="input-field" placeholder="Email Address" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="label">Password</label>
+                            <div class="input-container">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" name="password" class="input-field" placeholder="Create Password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="action-btn" id="submitBtn">Sign Up</button>
+                    </form>
+                    <p class="mt-6 text-sm text-gray-500">
+                        Already have an account? <span class="toggle-link" onclick="toggleView()">Log In</span>
+                    </p>
+                `;
+            }
         }
 
-        function toggleView() {
-            isLoginView = !isLoginView;
-            renderView();
-        }
-
-        function handleAuth(event, type) {
+        async function handleAuth(event, endpoint) {
             event.preventDefault();
-            showToast(type + " attempt successful!");
+            const btn = document.getElementById('submitBtn');
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showToast(result.message);
+                    setTimeout(() => window.location.href = result.redirect, 1000);
+                } else {
+                    showToast(result.message || "An error occurred");
+                }
+            } catch (error) {
+                showToast("Server connection failed");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isLoginView ? "Log In" : "Sign Up";
+            }
         }
 
-        function socialLogin(platform) {
-            showToast("Connecting to " + platform + "...");
+        function toggleView() { isLoginView = !isLoginView; renderView(); }
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = ""; }, 3000);
         }
 
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.className = "show";
-            setTimeout(function(){ 
-                toast.className = toast.className.replace("show", ""); 
-            }, 3000);
-        }
-
-        // Initial render
         window.onload = renderView;
     </script>
 </body>
