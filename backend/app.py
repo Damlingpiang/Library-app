@@ -14,7 +14,10 @@ users = {
 
 @app.route("/")
 def home():
-    return jsonify({"status": "Library App Backend Running Successfully!"})
+    return render_template("index.html")
+    @app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
 @app.route("/api/login", methods=['POST'])
 def login():
