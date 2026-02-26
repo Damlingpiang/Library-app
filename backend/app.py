@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -16,10 +16,15 @@ users = {
 def home():
     return render_template("index.html")
 
-# Dashboard page
+
+# Dashboard page (PROTECTED)
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    if "user" not in session:
+        return redirect("/")
+
+    return render_template("dashboard.html", name=session["user"])
+
 
 # Login API
 @app.route("/api/login", methods=['POST'])
@@ -29,6 +34,8 @@ def login():
     password = data.get('password')
 
     if email in users and users[email]['password'] == password:
+        session["user"] = users[email]["name"]   # ✅ SAVE SESSION
+
         return jsonify({
             "success": True,
             "message": "Welcome back!",
@@ -36,6 +43,7 @@ def login():
         })
 
     return jsonify({"success": False, "message": "Invalid credentials"}), 401
+
 
 # Signup API
 @app.route("/api/signup", methods=['POST'])
@@ -50,6 +58,13 @@ def signup():
 
     users[email] = {"password": password, "name": name}
     return jsonify({"success": True, "message": "Registration successful!"})
+
+
+# Logout
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect("/")
 
 
 if __name__ == "__main__":
