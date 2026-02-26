@@ -74,7 +74,7 @@
                     if (isLoginView) {
                         localStorage.setItem('library_user', result.user);
                         showToast("Redirecting to Dashboard...");
-                        // Add your dashboard redirect here if you have one
+                         window.location.href = "/dashboard";
                     } else {
                         toggleView();
                     }
