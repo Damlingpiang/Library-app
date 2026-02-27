@@ -71,14 +71,12 @@
 
                 if (response.ok) {
                     showToast(result.message);
-                    if (isLoginView) {
-                        localStorage.setItem('library_user', result.user);
-                        showToast("Redirecting to Dashboard...");
-                         window.location.href = "https://library-app-2-ktgf.onrender.com/dashboard";
-                    } else {
-                        toggleView();
-                    }
-                } else {
+                if (response.ok) {
+    localStorage.setItem('library_user', result.user);
+    window.location.href = "/dashboard";
+}
+                    
+                else {
                     showToast(result.message || "Auth failed");
                 }
             } catch (err) {
