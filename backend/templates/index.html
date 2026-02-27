@@ -51,8 +51,7 @@
                 <p class="mt-4 text-sm">Back to <span class="toggle-link" onclick="toggleView()">Login</span></p>
             `;
         }
-
-    async function handleAuth(event, path) {
+async function handleAuth(event, path) {
     event.preventDefault();
     const btn = document.getElementById('btn');
     const data = Object.fromEntries(new FormData(event.target).entries());
@@ -64,7 +63,7 @@
         const response = await fetch(`${API_BASE_URL}${path}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',   // ✅ Important for Flask sessions
+            credentials: 'include',   // ✅ REQUIRED for Flask session
             body: JSON.stringify(data)
         });
 
@@ -75,7 +74,7 @@
 
             localStorage.setItem('library_user', result.user);
 
-            // ✅ Redirect after BOTH login & signup
+            // Redirect after login OR signup
             window.location.href = "/dashboard";
         } else {
             showToast(result.message || "Auth failed");
@@ -88,6 +87,7 @@
         btn.innerText = isLoginView ? "Log In" : "Sign Up";
     }
 }
+
 
         function toggleView() { isLoginView = !isLoginView; renderView(); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
