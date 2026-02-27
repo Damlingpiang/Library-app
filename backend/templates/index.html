@@ -52,40 +52,42 @@
             `;
         }
 
-        async function handleAuth(event, path) {
-            event.preventDefault();
-            const btn = document.getElementById('btn');
-            const data = Object.fromEntries(new FormData(event.target).entries());
+    async function handleAuth(event, path) {
+    event.preventDefault();
+    const btn = document.getElementById('btn');
+    const data = Object.fromEntries(new FormData(event.target).entries());
 
-            btn.disabled = true;
-            btn.innerText = "Connecting...";
+    btn.disabled = true;
+    btn.innerText = "Connecting...";
 
-            try {
-                const response = await fetch(`${API_BASE_URL}${path}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+    try {
+        const response = await fetch(`${API_BASE_URL}${path}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',   // ✅ Important for Flask sessions
+            body: JSON.stringify(data)
+        });
 
-                const result = await response.json();
+        const result = await response.json();
 
-                if (response.ok) {
-                    showToast(result.message);
-                if (response.ok) {
-    localStorage.setItem('library_user', result.user);
-    window.location.href = "/dashboard";
-}
-                    
-                else {
-                    showToast(result.message || "Auth failed");
-                }
-            } catch (err) {
-                showToast("Could not reach Render server. Wake it up?");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = isLoginView ? "Log In" : "Sign Up";
-            }
+        if (response.ok) {
+            showToast(result.message);
+
+            localStorage.setItem('library_user', result.user);
+
+            // ✅ Redirect after BOTH login & signup
+            window.location.href = "/dashboard";
+        } else {
+            showToast(result.message || "Auth failed");
         }
+
+    } catch (err) {
+        showToast("Could not reach Render server. Wake it up?");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = isLoginView ? "Log In" : "Sign Up";
+    }
+}
 
         function toggleView() { isLoginView = !isLoginView; renderView(); }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
