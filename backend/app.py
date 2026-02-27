@@ -57,9 +57,15 @@ def signup():
         return jsonify({"success": False, "message": "User already exists"}), 400
 
     users[email] = {"password": password, "name": name}
-    return jsonify({"success": True, "message": "Registration successful!"})
 
+    # 🔥 ADD THIS LINE
+    session["user"] = name
 
+    return jsonify({
+        "success": True,
+        "message": "Registration successful!",
+        "user": name
+    })
 # Logout
 @app.route("/logout")
 def logout():
