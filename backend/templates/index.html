@@ -75,7 +75,7 @@ async function handleAuth(event, path) {
             localStorage.setItem('library_user', result.user);
 
             // Redirect after login OR signup
-            window.location.href = "dashboard.html";
+            window.location.href = "/dashboard";
         } else {
             showToast(result.message || "Auth failed");
         }
