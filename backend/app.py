@@ -1,9 +1,13 @@
 from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
-app.secret_key = 'library_app_secure_key_99'
 
+# ✅ Better secret key handling for Render
+app.secret_key = os.environ.get("SECRET_KEY", "library_app_secure_key_99")
+
+# ✅ Important for session + frontend requests
 CORS(app, supports_credentials=True)
 
 # Mock database
@@ -22,19 +26,19 @@ def home():
 def dashboard():
     if "user" not in session:
         return redirect("/")
-
     return render_template("dashboard.html", name=session["user"])
 
 
 # Login API
 @app.route("/api/login", methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json()
+
     email = data.get('email')
     password = data.get('password')
 
     if email in users and users[email]['password'] == password:
-        session["user"] = users[email]["name"]   # ✅ SAVE SESSION
+        session["user"] = users[email]["name"]
 
         return jsonify({
             "success": True,
@@ -45,10 +49,11 @@ def login():
     return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 
-# Signup API
+# Signup API (Auto Login After Register)
 @app.route("/api/signup", methods=['POST'])
 def signup():
-    data = request.json
+    data = request.get_json()
+
     email = data.get('email')
     name = data.get('name')
     password = data.get('password')
@@ -58,7 +63,7 @@ def signup():
 
     users[email] = {"password": password, "name": name}
 
-    # 🔥 ADD THIS LINE
+    # ✅ Auto login after signup
     session["user"] = name
 
     return jsonify({
@@ -66,14 +71,16 @@ def signup():
         "message": "Registration successful!",
         "user": name
     })
+
+
 # Logout
 @app.route("/logout")
 def logout():
-    session.pop("user", None)
+    session.clear()
     return redirect("/")
 
-import os
 
+# Render Port Setup
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
