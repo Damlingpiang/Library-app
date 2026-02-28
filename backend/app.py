@@ -3,7 +3,8 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
-
+import time
+print("Server started at", time.time())
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "library_app_secure_key_99")
 
