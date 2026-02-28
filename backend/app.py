@@ -6,9 +6,14 @@ import psycopg2
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "library_app_secure_key_99")
+
+# Allow frontend connection
 CORS(app, supports_credentials=True)
 
-# 🔥 Connect PostgreSQL
+# =========================
+# DATABASE CONNECTION
+# =========================
+
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
@@ -17,7 +22,7 @@ if not DATABASE_URL:
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 cursor = conn.cursor()
 
-# 🔥 Create table if not exists
+# Create users table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -31,16 +36,14 @@ conn.commit()
 
 
 # =========================
-# ROUTES
+# PAGE ROUTES
 # =========================
 
-# Home
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# Dashboard (Protected)
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
@@ -48,7 +51,6 @@ def dashboard():
     return render_template("dashboard.html", name=session["user"])
 
 
-# Admin Panel (Protected)
 @app.route("/admin")
 def admin():
     if "role" not in session or session["role"] != "admin":
@@ -57,10 +59,10 @@ def admin():
 
 
 # =========================
-# AUTH SYSTEM
+# AUTH ROUTES
 # =========================
 
-# Signup
+# SIGNUP
 @app.route("/api/signup", methods=["POST"])
 def signup():
     data = request.get_json()
@@ -69,7 +71,9 @@ def signup():
     name = data.get("name")
     password = data.get("password")
 
-    # 🔐 Hash password
+    if not email or not name or not password:
+        return jsonify({"message": "All fields required"}), 400
+
     hashed_password = generate_password_hash(password)
 
     # Only this email becomes admin
@@ -85,16 +89,19 @@ def signup():
         session["user"] = name
         session["role"] = role
 
-        return jsonify({"success": True})
+        return jsonify({
+            "message": "Signup successful",
+            "role": role
+        }), 200
 
     except psycopg2.Error:
+        conn.rollback()
         return jsonify({
-            "success": False,
             "message": "User already exists"
         }), 400
 
 
-# Login
+# LOGIN
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -108,31 +115,29 @@ def login():
     )
     user = cursor.fetchone()
 
-    # 🔐 Check hashed password
     if user and check_password_hash(user[1], password):
         session["user"] = user[0]
         session["role"] = user[2]
 
-        if user[2] == "admin":
-            return jsonify({"success": True, "redirect": "/admin"})
-        else:
-            return jsonify({"success": True, "redirect": "/dashboard"})
+        return jsonify({
+            "message": "Login successful",
+            "role": user[2]
+        }), 200
 
     return jsonify({
-        "success": False,
-        "message": "Invalid credentials"
+        "message": "Invalid email or password"
     }), 401
 
 
-# Logout
-@app.route("/logout")
+# LOGOUT
+@app.route("/api/logout", methods=["POST"])
 def logout():
     session.clear()
-    return redirect("/")
+    return jsonify({"message": "Logged out"}), 200
 
 
 # =========================
-# RUN APP
+# RUN SERVER
 # =========================
 
 if __name__ == "__main__":
