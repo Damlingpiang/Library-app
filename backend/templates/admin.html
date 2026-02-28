@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLib | Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --sidebar-bg: #1e293b;
+            --accent-purple: #9333ea;
+            --accent-glow: rgba(147, 51, 234, 0.4);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --danger: #ef4444;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Layout --- */
+        .wrapper {
+            display: flex;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            left: -260px;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--text-main);
+        }
+
+        .menu-item.active {
+            background: rgba(147, 51, 234, 0.15);
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-purple);
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1;
+            margin-left: 260px;
+            transition: var(--transition);
+            padding-bottom: 2rem;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* --- Navbar --- */
+        .navbar {
+            height: 70px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-logout:hover {
+            background: var(--accent-purple);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* --- Section Container --- */
+        .section {
+            padding: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Overview Cards --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 15px var(--accent-glow);
+            border-color: var(--accent-purple);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            color: var(--accent-purple);
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(5px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        th {
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        /* --- Forms --- */
+        .form-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: scale(1.02);
+        }
+
+        /* --- Book Grid --- */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .book-card:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-3px);
+        }
+
+        .book-card h4 {
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .book-card p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: rgba(147, 51, 234, 0.2);
+            color: var(--accent-purple);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Toast Notification --- */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            transform: translateY(100px);
+            transition: transform 0.4s ease;
+            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #toast.show {
+            transform: translateY(0);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .sidebar {
+                left: -260px;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .nav-right span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Action completed successfully!</div>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                SmartLib
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" onclick="showSection('overview', this)">
+                    <i>📊</i> Overview
+                </li>
+                <li class="menu-item" onclick="showSection('users', this)">
+                    <i>👥</i> Manage Users
+                </li>
+                <li class="menu-item" onclick="showSection('books', this)">
+                    <i>📚</i> Manage Books
+                </li>
+                <li class="menu-item" onclick="showSection('analytics', this)">
+                    <i>📈</i> Analytics
+                </li>
+            </ul>
+            <div class="menu-item" onclick="handleLogout()" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                <i>🚪</i> Logout
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="main">
+            <!-- Navbar -->
+            <nav class="navbar">
+                <div class="nav-left">
+                    <div class="hamburger" onclick="toggleSidebar()">☰</div>
+                    <div style="font-weight: 600; font-size: 1.1rem; color: var(--accent-purple);">Admin Dashboard</div>
+                </div>
+                <div class="nav-right">
+                    <div class="admin-profile">
+                        <span id="themeToggle" style="cursor: pointer;">🌙</span>
+                        <span>Welcome, <strong>Admin</strong></span>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                </div>
+            </nav>
+
+            <!-- Overview Section -->
+            <section id="overview" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="value" id="count-users">0</div>
+                        <p>Active members</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Books</h3>
+                        <div class="value" id="count-books">0</div>
+                        <p>Library stock</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Admin Account</h3>
+                        <div class="value">Super</div>
+                        <p>Access Level</p>
+                    </div>
+                </div>
+                
+                <!-- Simple Recent Activity Mock -->
+                <div class="table-container" style="padding: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">Recent Activity</h3>
+                    <p style="color: var(--text-dim);">System check: All services operational. No alerts today.</p>
+                </div>
+            </section>
+
+            <!-- Manage Users Section -->
+            <section id="users" class="section">
+                <h2 style="margin-bottom: 1.5rem;">User Management</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- JS injected rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manage Books Section -->
+            <section id="books" class="section">
+                <h2 style="margin-bottom: 1.5rem;">Book Inventory</h2>
+                
+                <!-- Add Book Form -->
+                <div class="form-card">
+                    <h3 style="margin-bottom: 1rem;">Add New Book</h3>
+                    <form id="addBookForm" class="form-group">
+                        <input type="text" id="bookTitle" class="input-field" placeholder="Book Title" required>
+                        <input type="text" id="bookAuthor" class="input-field" placeholder="Author" required>
+                        <input type="text" id="bookCategory" class="input-field" placeholder="Category" required>
+                        <button type="submit" class="btn-primary">Add Book</button>
+                    </form>
+                </div>
+
+                <div class="books-grid" id="books-container">
+                    <!-- JS injected cards -->
+                </div>
+            </section>
+
+            <!-- Analytics Placeholder -->
+            <section id="analytics" class="section">
+                <h2>Analytics</h2>
+                <div class="stat-card" style="margin-top: 2rem; height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <p style="font-size: 1.2rem; color: var(--text-dim);">Charting library growth... [Visual Data Pending]</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- State Management (Mocks) ---
+        let users = [
+            { id: 1, name: "John Doe", email: "john@example.com", role: "Member" },
+            { id: 2, name: "Jane Smith", email: "jane@smartlib.com", role: "Admin" },
+            { id: 3, name: "Alex Johnson", email: "alex@gmail.com", role: "Member" }
+        ];
+
+        let books = [
+            { id: 101, title: "Clean Code", author: "Robert C. Martin", category: "Programming" },
+            { id: 102, title: "The Pragmatic Programmer", author: "Andy Hunt", category: "Development" },
+            { id: 103, title: "Atomic Habits", author: "James Clear", category: "Self-Help" }
+        ];
+
+        // --- UI Logic ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('main').classList.toggle('expanded');
+        }
+
+        function showSection(sectionId, element) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            // Remove active from all menu items
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            
+            // Show target
+            document.getElementById(sectionId).classList.add('active');
+            if(element) element.classList.add('active');
+
+            // Close sidebar on mobile after clicking
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // --- Core Functionality (Async Data Simulation) ---
+        async function loadUsers() {
+            // Simulating API latency
+            await new Promise(r => setTimeout(r, 400));
+            
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>#${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td><button class="btn-delete" onclick="deleteUser(${user.id})">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+            updateStats();
+        }
+
+        async function loadBooks() {
+            await new Promise(r => setTimeout(r, 400));
+            
+            const container = document.getElementById('books-container');
+            container.innerHTML = '';
+            
+            books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <span class="category-tag">${book.category}</span>
+                    <h4>${book.title}</h4>
+                    <p>by ${book.author}</p>
+                    <button class="btn-delete" onclick="deleteBook(${book.id})">Remove Book</button>
+                `;
+                container.appendChild(card);
+            });
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('count-users').innerText = users.length;
+            document.getElementById('count-books').innerText = books.length;
+        }
+
+        // --- Delete Handlers ---
+        async function deleteUser(id) {
+            if (!confirm(`Are you sure you want to delete user #${id}?`)) return;
+
+            try {
+                // Fetch call as requested (will fail here since no actual backend, handled in catch for demo)
+                // await fetch(`/api/admin/delete-user/${id}`, { method: 'DELETE' });
+
+                // Mocking successful deletion
+                users = users.filter(u => u.id !== id);
+                await loadUsers();
+                showToast(`User #${id} deleted successfully`);
+            } catch (error) {
+                console.error("API error, using local fallback", error);
+            }
+        }
+
+        async function deleteBook(id) {
+            if (!confirm("Remove this book from inventory?")) return;
+            
+            books = books.filter(b => b.id !== id);
+            await loadBooks();
+            showToast("Book removed successfully");
+        }
+
+        // --- Form Handler ---
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('bookTitle').value;
+            const author = document.getElementById('bookAuthor').value;
+            const category = document.getElementById('bookCategory').value;
+
+            const newBook = {
+                id: Date.now(),
+                title,
+                author,
+                category
+            };
+
+            books.unshift(newBook);
+            await loadBooks();
+            e.target.reset();
+            showToast("New book added to library!");
+        });
+
+        function handleLogout() {
+            if(confirm("Are you sure you want to logout?")) {
+                alert("Redirecting to login...");
+                window.location.reload();
+            }
+        }
+
+        // Initialize
+        window.onload = () => {
+            loadUsers();
+            loadBooks();
+        };
+    </script>
+</body>
+</html>
+
