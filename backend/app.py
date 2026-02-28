@@ -4,36 +4,55 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import psycopg2
 import time
+
 print("Server started at", time.time())
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "library_app_secure_key_99")
 
 # Allow frontend connection
 CORS(app, supports_credentials=True)
 
+
 # =========================
-# DATABASE CONNECTION
+# DATABASE CONNECTION FUNCTION
 # =========================
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise Exception("DATABASE_URL not found!")
+    raise Exception("DATABASE_URL not found! Set it in Render Environment Variables")
 
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-cursor = conn.cursor()
+def get_conn():
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
-# Create users table
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    name TEXT,
-    email TEXT UNIQUE,
-    password TEXT,
-    role TEXT DEFAULT 'user'
-);
-""")
-conn.commit()
+
+# =========================
+# CREATE TABLE (RUN ON START)
+# =========================
+
+try:
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        role TEXT DEFAULT 'user'
+    );
+    """)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print("Database ready")
+
+except Exception as e:
+    print("Database init error:", e)
 
 
 # =========================
@@ -54,38 +73,43 @@ def dashboard():
 
 @app.route("/admin")
 def admin():
-    if "role" not in session or session["role"] != "admin":
+    if session.get("role") != "admin":
         return redirect("/")
     return render_template("admin.html")
 
 
 # =========================
-# AUTH ROUTES
+# SIGNUP
 # =========================
 
-# SIGNUP
 @app.route("/api/signup", methods=["POST"])
 def signup():
-    data = request.get_json()
-
-    email = data.get("email")
-    name = data.get("name")
-    password = data.get("password")
-
-    if not email or not name or not password:
-        return jsonify({"message": "All fields required"}), 400
-
-    hashed_password = generate_password_hash(password)
-
-    # Only this email becomes admin
-    role = "admin" if email == "admin@library.com" else "user"
-
     try:
+        data = request.get_json()
+
+        email = data.get("email")
+        name = data.get("name")
+        password = data.get("password")
+
+        if not email or not name or not password:
+            return jsonify({"message": "All fields required"}), 400
+
+        hashed_password = generate_password_hash(password)
+
+        role = "admin" if email == "admin@library.com" else "user"
+
+        conn = get_conn()
+        cursor = conn.cursor()
+
         cursor.execute(
             "INSERT INTO users (name, email, password, role) VALUES (%s, %s, %s, %s)",
             (name, email, hashed_password, role)
         )
+
         conn.commit()
+
+        cursor.close()
+        conn.close()
 
         session["user"] = name
         session["role"] = role
@@ -95,46 +119,73 @@ def signup():
             "role": role
         }), 200
 
-    except psycopg2.Error:
-        conn.rollback()
-        return jsonify({
-            "message": "User already exists"
-        }), 400
+    except psycopg2.errors.UniqueViolation:
+        return jsonify({"message": "User already exists"}), 400
+
+    except Exception as e:
+        print("Signup error:", e)
+        return jsonify({"message": "Server error"}), 500
 
 
+# =========================
 # LOGIN
+# =========================
+
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    email = data.get("email")
-    password = data.get("password")
+        email = data.get("email")
+        password = data.get("password")
 
-    cursor.execute(
-        "SELECT name, password, role FROM users WHERE email=%s",
-        (email,)
-    )
-    user = cursor.fetchone()
+        conn = get_conn()
+        cursor = conn.cursor()
 
-    if user and check_password_hash(user[1], password):
-        session["user"] = user[0]
-        session["role"] = user[2]
+        cursor.execute(
+            "SELECT name, password, role FROM users WHERE email=%s",
+            (email,)
+        )
 
-        return jsonify({
-            "message": "Login successful",
-            "role": user[2]
-        }), 200
+        user = cursor.fetchone()
 
-    return jsonify({
-        "message": "Invalid email or password"
-    }), 401
+        cursor.close()
+        conn.close()
+
+        if user and check_password_hash(user[1], password):
+
+            session["user"] = user[0]
+            session["role"] = user[2]
+
+            return jsonify({
+                "message": "Login successful",
+                "role": user[2]
+            }), 200
+
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    except Exception as e:
+        print("Login error:", e)
+        return jsonify({"message": "Server error"}), 500
 
 
+# =========================
 # LOGOUT
+# =========================
+
 @app.route("/api/logout", methods=["POST"])
 def logout():
     session.clear()
     return jsonify({"message": "Logged out"}), 200
+
+
+# =========================
+# HEALTH CHECK (VERY IMPORTANT FOR RENDER)
+# =========================
+
+@app.route("/health")
+def health():
+    return "OK", 200
 
 
 # =========================
