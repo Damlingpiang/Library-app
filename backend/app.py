@@ -84,6 +84,8 @@ def admin():
 
 @app.route("/api/signup", methods=["POST"])
 def signup():
+    conn = None
+    cursor = None
     try:
         data = request.get_json()
 
@@ -95,7 +97,6 @@ def signup():
             return jsonify({"message": "All fields required"}), 400
 
         hashed_password = generate_password_hash(password)
-
         role = "admin" if email == "admin@library.com" else "user"
 
         conn = get_conn()
@@ -108,9 +109,6 @@ def signup():
 
         conn.commit()
 
-        cursor.close()
-        conn.close()
-
         session["user"] = name
         session["role"] = role
 
@@ -120,55 +118,19 @@ def signup():
         }), 200
 
     except psycopg2.errors.UniqueViolation:
+        if conn:
+            conn.rollback()
         return jsonify({"message": "User already exists"}), 400
 
     except Exception as e:
         print("Signup error:", e)
         return jsonify({"message": "Server error"}), 500
 
-
-# =========================
-# LOGIN
-# =========================
-
-@app.route("/api/login", methods=["POST"])
-def login():
-    try:
-        data = request.get_json()
-
-        email = data.get("email")
-        password = data.get("password")
-
-        conn = get_conn()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "SELECT name, password, role FROM users WHERE email=%s",
-            (email,)
-        )
-
-        user = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
-
-        if user and check_password_hash(user[1], password):
-
-            session["user"] = user[0]
-            session["role"] = user[2]
-
-            return jsonify({
-                "message": "Login successful",
-                "role": user[2]
-            }), 200
-
-        return jsonify({"message": "Invalid email or password"}), 401
-
-    except Exception as e:
-        print("Login error:", e)
-        return jsonify({"message": "Server error"}), 500
-
-
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 # =========================
 # LOGOUT
 # =========================
