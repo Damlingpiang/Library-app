@@ -3,38 +3,775 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Smart Library | Modern Management UI</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --secondary-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            --bg-light: #f8fafc;
+            --card-light: rgba(255, 255, 255, 0.8);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --navbar-bg: rgba(248, 250, 252, 0.8);
+            --border-color: rgba(226, 232, 240, 0.8);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark-mode {
+            --bg-light: #0f172a;
+            --card-light: rgba(30, 41, 59, 0.7);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --navbar-bg: rgba(15, 23, 42, 0.8);
+            --border-color: rgba(51, 65, 85, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            transition: var(--transition);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .logo {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        /* --- Navbar --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: var(--navbar-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 0 1 300px;
+            margin: 0 1.5rem;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            background: var(--card-light);
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            width: 18px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--border-color);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 180px 1.5rem 100px;
+            text-align: center;
+            background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.1), transparent),
+                        radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.1), transparent);
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+            display: inline-block;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.5);
+        }
+
+        /* --- Categories --- */
+        .categories-wrapper {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            padding: 0 1.5rem;
+        }
+
+        .category-chips {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 10px 5px;
+            scrollbar-width: none;
+        }
+
+        .category-chips::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            padding: 0.6rem 1.5rem;
+            background: var(--card-light);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .chip.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .chip:hover:not(.active) {
+            background: var(--border-color);
+            color: var(--text-main);
+        }
+
+        /* --- Book Grid --- */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .book-card {
+            background: var(--card-light);
+            border-radius: 20px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 320px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .book-card:hover .book-cover img {
+            transform: scale(1.05);
+        }
+
+        .category-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #4f46e5;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+        }
+
+        .book-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-main);
+        }
+
+        .book-author {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .book-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .btn-outline:hover {
+            background: var(--border-color);
+        }
+
+        .btn-sm {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 10px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            width: 90%;
+            max-width: 800px;
+            border-radius: 24px;
+            padding: 2.5rem;
+            position: relative;
+            transform: scale(0.9);
+            transition: var(--transition);
+            display: flex;
+            gap: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-left {
+            flex: 0 0 300px;
+        }
+
+        .modal-img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-right h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-desc {
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+        }
+
+        /* --- Floating Action Button --- */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--secondary-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.4);
+            cursor: pointer;
+            z-index: 900;
+            transition: var(--transition);
+        }
+
+        .fab:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* --- Mobile Toggle --- */
+        .menu-toggle {
+            display: none;
+        }
+
+        /* --- Loading Spinner --- */
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--border-color);
+            border-bottom-color: #4f46e5;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 992px) {
+            .nav-links, .search-container {
+                display: none;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .modal-content {
+                flex-direction: column;
+                padding: 1.5rem;
+            }
+            .modal-left {
+                flex: 0 0 auto;
+                width: 100%;
+                text-align: center;
+            }
+            .modal-left img {
+                max-width: 200px;
+            }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
-    <nav class="bg-white border-b px-8 py-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-indigo-600">PremiumApp</h1>
-        <div class="flex items-center gap-4">
-            <span class="text-gray-600">Welcome, <strong>{{ name }}</strong></span>
-            <a href="/logout" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100 transition">Logout</a>
+<body>
+
+    <!-- Navbar -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i data-lucide="library"></i>
+                SmartLib
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Books</a></li>
+                <li><a href="#">Categories</a></li>
+                <li><a href="#">My Borrowed</a></li>
+            </ul>
+
+            <div class="search-container">
+                <i data-lucide="search"></i>
+                <input type="text" id="bookSearch" placeholder="Search books, authors...">
+            </div>
+
+          
+            <div class="nav-actions">
+            
+            <!-- Logged in user name -->
+            <span style="font-weight:600; margin-right:10px;">
+            {{ name }}
+            </span>
+            
+            <!-- Logout button -->
+            <a href="/logout" style="text-decoration:none;">
+            <button class="btn-outline">Logout</button>
+            </a>
+            
+            <button class="btn-icon" id="themeToggle" title="Toggle Theme">
+            <i data-lucide="moon" id="themeIcon"></i>
+            </button>
+            
+            <button class="btn-icon menu-toggle">
+            <i data-lucide="menu"></i>
+            </button>
+            
+            </div>
         </div>
     </nav>
 
-    <main class="p-8 max-w-4xl mx-auto">
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <h2 class="text-2xl font-semibold mb-4">Your Private Workspace</h2>
-            <p class="text-gray-500 mb-6">This content is protected by Flask sessions. Only logged-in users can see this.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="p-4 bg-indigo-50 rounded-2xl">
-                    <div class="text-indigo-600 font-bold text-lg">42</div>
-                    <div class="text-indigo-400 text-xs uppercase tracking-wider">Active Tasks</div>
-                </div>
-                <div class="p-4 bg-purple-50 rounded-2xl">
-                    <div class="text-purple-600 font-bold text-lg">12</div>
-                    <div class="text-purple-400 text-xs uppercase tracking-wider">Messages</div>
-                </div>
-                <div class="p-4 bg-pink-50 rounded-2xl">
-                    <div class="text-pink-600 font-bold text-lg">Pro</div>
-                    <div class="text-pink-400 text-xs uppercase tracking-wider">Account Level</div>
-                </div>
-            </div>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="fade-in">
+            <h1>Welcome to <span style="color: #4f46e5">Smart Library</span></h1>
+            <p>Discover thousands of books, digital resources, and educational materials. Borrow your favorite titles with just one click.</p>
+            <button class="btn-primary" onclick="document.getElementById('explore').scrollIntoView({behavior: 'smooth'})">
+                Browse Collection
+            </button>
+        </div>
+    </header>
+
+    <!-- Categories Section -->
+    <section class="categories-wrapper" id="explore">
+        <div class="category-chips" id="categoryList">
+            <div class="chip active" data-category="All">All Books</div>
+            <div class="chip" data-category="Fiction">Fiction</div>
+            <div class="chip" data-category="Science">Science</div>
+            <div class="chip" data-category="History">History</div>
+            <div class="chip" data-category="Technology">Technology</div>
+            <div class="chip" data-category="Art">Art</div>
+            <div class="chip" data-category="Biography">Biography</div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div id="loading" style="text-align: center; display: none;">
+            <span class="loader"></span>
+        </div>
+        <div class="book-grid" id="bookGrid">
+            <!-- Books will be injected here by JS -->
         </div>
     </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="close-modal" id="closeModal">
+                <i data-lucide="x"></i>
+            </div>
+            <div class="modal-left">
+                <img src="" alt="Book Cover" class="modal-img" id="modalImg">
+            </div>
+            <div class="modal-right">
+                <span id="modalTag" class="category-tag" style="position: static; display: inline-block; margin-bottom: 10px;">Category</span>
+                <h2 id="modalTitle">Book Title</h2>
+                <p id="modalAuthor" style="color: var(--text-muted); font-weight: 500;">By Author Name</p>
+                <div class="modal-desc" id="modalDesc">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <p><strong>Availability:</strong> <span id="modalStock" style="color: #10b981">12 Copies Available</span></p>
+                    <p><strong>Rating:</strong> ⭐ 4.8/5</p>
+                </div>
+                <button class="btn-primary" style="width: 100%;" onclick="handleBorrow()">Borrow This Book</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab" title="Add New Book">
+        <i data-lucide="plus"></i>
+    </div>
+
+    <script>
+        // Mock Data
+        const books = [
+            { id: 1, title: "The Midnight Library", author: "Matt Haig", category: "Fiction", image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400", desc: "Between life and death there is a library, and within that library, the shelves go on forever. Every book provides a chance to try another life you could have lived." },
+            { id: 2, title: "A Brief History of Time", author: "Stephen Hawking", category: "Science", image: "https://images.unsplash.com/photo-1532012197367-9ba682698a4d?auto=format&fit=crop&q=80&w=400", desc: "A landmark volume in science writing by one of the great minds of our time, Stephen Hawking explores the most profound questions of the universe." },
+            { id: 3, title: "The Art of War", author: "Sun Tzu", category: "History", image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=400", desc: "The Art of War is an ancient Chinese military treatise dating from the Late Spring and Autumn Period. The work, which is attributed to the ancient Chinese military strategist Sun Tzu." },
+            { id: 4, title: "Clean Code", author: "Robert C. Martin", category: "Technology", image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&q=80&w=400", desc: "Even bad code can function. But if code isn't clean, it can bring a development organization to its knees. Every year, countless hours and significant resources are lost." },
+            { id: 5, title: "The Great Gatsby", author: "F. Scott Fitzgerald", category: "Fiction", image: "https://images.unsplash.com/photo-1543004471-240ce49a2a59?auto=format&fit=crop&q=80&w=400", desc: "The story of the mysteriously wealthy Jay Gatsby and his love for the beautiful Daisy Buchanan, The Great Gatsby is an exquisite and evocative image of the Jazz Age." },
+            { id: 6, title: "Sapiens", author: "Yuval Noah Harari", category: "History", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400", desc: "Destined to become a modern classic, Sapiens is a thrilling account of Humankind’s extraordinary history—from the Stone Age to the Silicon Age." },
+            { id: 7, title: "Deep Learning", author: "Ian Goodfellow", category: "Technology", image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=400", desc: "The text offers mathematical and conceptual background, covering relevant concepts in linear algebra, probability theory and information theory." },
+            { id: 8, title: "Steve Jobs", author: "Walter Isaacson", category: "Biography", image: "https://images.unsplash.com/photo-1531243269054-5ebf6f3b0b6e?auto=format&fit=crop&q=80&w=400", desc: "Based on more than forty interviews with Jobs conducted over two years—as well as interviews with more than a hundred family members, friends, adversaries, competitors, and colleagues." }
+        ];
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // DOM Elements
+        const bookGrid = document.getElementById('bookGrid');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const searchInput = document.getElementById('bookSearch');
+        const categoryList = document.getElementById('categoryList');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeModal = document.getElementById('closeModal');
+        const loading = document.getElementById('loading');
+
+        // Render Books
+        function renderBooks(data) {
+            bookGrid.innerHTML = '';
+            if(data.length === 0) {
+                bookGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted)">No books found matching your criteria.</div>`;
+                return;
+            }
+
+            data.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div class="book-cover">
+                        <span class="category-tag">${book.category}</span>
+                        <img src="${book.image}" alt="${book.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x600?text=No+Cover'">
+                    </div>
+                    <h3 class="book-title">${book.title}</h3>
+                    <p class="book-author">${book.author}</p>
+                    <div class="book-footer">
+                        <button class="btn-outline" onclick="openBookDetails(${book.id})">Details</button>
+                        <button class="btn-sm" onclick="this.innerHTML='Borrowed!'; this.style.opacity='0.7'; this.disabled=true;">Borrow</button>
+                    </div>
+                `;
+                bookGrid.appendChild(card);
+            });
+        }
+
+        // Search Logic
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = books.filter(b => 
+                b.title.toLowerCase().includes(term) || 
+                b.author.toLowerCase().includes(term)
+            );
+            renderBooks(filtered);
+        });
+
+        // Category Filter
+        categoryList.addEventListener('click', (e) => {
+            if(e.target.classList.contains('chip')) {
+                // UI Toggle
+                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+
+                // Filter logic
+                const cat = e.target.dataset.category;
+                loading.style.display = 'block';
+                bookGrid.style.opacity = '0.3';
+
+                setTimeout(() => {
+                    const filtered = cat === 'All' ? books : books.filter(b => b.category === cat);
+                    renderBooks(filtered);
+                    loading.style.display = 'none';
+                    bookGrid.style.opacity = '1';
+                }, 400);
+            }
+        });
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            // Swap icon
+            themeIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        });
+
+        // Check stored theme
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeIcon.setAttribute('data-lucide', 'sun');
+            lucide.createIcons();
+        }
+
+        // Modal Logic
+        function openBookDetails(id) {
+            const book = books.find(b => b.id === id);
+            if(!book) return;
+
+            document.getElementById('modalTitle').innerText = book.title;
+            document.getElementById('modalAuthor').innerText = `By ${book.author}`;
+            document.getElementById('modalDesc').innerText = book.desc;
+            document.getElementById('modalImg').src = book.image;
+            document.getElementById('modalTag').innerText = book.category;
+            
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        closeModal.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        window.addEventListener('click', (e) => {
+            if(e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        function handleBorrow() {
+            const btn = event.target;
+            btn.innerHTML = 'Request Sent!';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                btn.innerHTML = 'Borrow This Book';
+                btn.style.background = '';
+            }, 1000);
+        }
+
+        // Sticky Navbar Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(window.scrollY > 50) {
+                nav.style.padding = '0.5rem 0';
+                nav.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+            } else {
+                nav.style.padding = '1rem 0';
+                nav.style.boxShadow = 'none';
+            }
+        });
+
+        // Initial Render
+        renderBooks(books);
+    </script>
 </body>
 </html>
