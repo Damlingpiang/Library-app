@@ -79,7 +79,6 @@ def admin():
 # =========================
 # LOGIN
 # =========================
-
 @app.route("/api/login", methods=["POST"])
 def login():
     conn = None
@@ -103,7 +102,8 @@ def login():
 
         user = cursor.fetchone()
 
-        if user and check_password_hash(user[1], password):
+        # FIX: compare plain password
+        if user and user[1] == password:
 
             session["user"] = user[0]
             session["role"] = user[2]
