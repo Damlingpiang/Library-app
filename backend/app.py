@@ -76,7 +76,54 @@ def admin():
     if session.get("role") != "admin":
         return redirect("/")
     return render_template("admin.html")
+# =========================
+# LOGIN
+# =========================
 
+@app.route("/api/login", methods=["POST"])
+def login():
+    conn = None
+    cursor = None
+    try:
+        data = request.get_json()
+
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return jsonify({"message": "Email and password required"}), 400
+
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT name, password, role FROM users WHERE email=%s",
+            (email,)
+        )
+
+        user = cursor.fetchone()
+
+        if user and check_password_hash(user[1], password):
+
+            session["user"] = user[0]
+            session["role"] = user[2]
+
+            return jsonify({
+                "message": "Login successful",
+                "role": user[2]
+            }), 200
+
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    except Exception as e:
+        print("Login error:", e)
+        return jsonify({"message": "Server error"}), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 # =========================
 # SIGNUP
