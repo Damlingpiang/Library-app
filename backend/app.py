@@ -10,27 +10,27 @@ print("Server started at", time.time())
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "library_app_secure_key_99")
 
-# Allow frontend connection
+# IMPORTANT for session cookies
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+
 CORS(app, supports_credentials=True)
 
-
 # =========================
-# DATABASE CONNECTION FUNCTION
+# DATABASE CONNECTION
 # =========================
-
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise Exception("DATABASE_URL not found! Set it in Render Environment Variables")
+    raise Exception("DATABASE_URL not found!")
 
 def get_conn():
     return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 
 # =========================
-# CREATE TABLE (RUN ON START)
+# CREATE TABLE
 # =========================
-
 try:
     conn = get_conn()
     cursor = conn.cursor()
@@ -48,7 +48,6 @@ try:
     conn.commit()
     cursor.close()
     conn.close()
-
     print("Database ready")
 
 except Exception as e:
@@ -73,24 +72,22 @@ def dashboard():
 
 @app.route("/admin")
 def admin():
+    # 🔐 PROTECT ADMIN PAGE
     if session.get("role") != "admin":
         return redirect("/")
     return render_template("admin.html")
+
+
 # =========================
 # LOGIN
 # =========================
+
 @app.route("/api/login", methods=["POST"])
 def login():
-    conn = None
-    cursor = None
     try:
         data = request.get_json()
-
         email = data.get("email")
         password = data.get("password")
-
-        if not email or not password:
-            return jsonify({"message": "Email and password required"}), 400
 
         conn = get_conn()
         cursor = conn.cursor()
@@ -101,9 +98,11 @@ def login():
         )
 
         user = cursor.fetchone()
+        cursor.close()
+        conn.close()
 
-        # FIX: compare plain password
-        if user and user[1] == password:
+        # ✅ CORRECT PASSWORD CHECK
+        if user and check_password_hash(user[1], password):
 
             session["user"] = user[0]
             session["role"] = user[2]
@@ -119,11 +118,6 @@ def login():
         print("Login error:", e)
         return jsonify({"message": "Server error"}), 500
 
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 # =========================
 # SIGNUP
@@ -131,19 +125,15 @@ def login():
 
 @app.route("/api/signup", methods=["POST"])
 def signup():
-    conn = None
-    cursor = None
     try:
         data = request.get_json()
-
         email = data.get("email")
         name = data.get("name")
         password = data.get("password")
 
-        if not email or not name or not password:
-            return jsonify({"message": "All fields required"}), 400
-
         hashed_password = generate_password_hash(password)
+
+        # Only this email becomes admin
         role = "admin" if email == "admin@library.com" else "user"
 
         conn = get_conn()
@@ -155,6 +145,8 @@ def signup():
         )
 
         conn.commit()
+        cursor.close()
+        conn.close()
 
         session["user"] = name
         session["role"] = role
@@ -165,19 +157,13 @@ def signup():
         }), 200
 
     except psycopg2.errors.UniqueViolation:
-        if conn:
-            conn.rollback()
         return jsonify({"message": "User already exists"}), 400
 
     except Exception as e:
         print("Signup error:", e)
         return jsonify({"message": "Server error"}), 500
 
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+
 # =========================
 # LOGOUT
 # =========================
@@ -189,7 +175,7 @@ def logout():
 
 
 # =========================
-# HEALTH CHECK (VERY IMPORTANT FOR RENDER)
+# HEALTH CHECK
 # =========================
 
 @app.route("/health")
@@ -198,7 +184,7 @@ def health():
 
 
 # =========================
-# RUN SERVER
+# RUN
 # =========================
 
 if __name__ == "__main__":
