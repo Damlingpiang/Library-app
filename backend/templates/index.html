@@ -11,7 +11,24 @@
         body { font-family: 'Poppins', sans-serif; background: #f4f6fc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
         .auth-card { background: #ffffff; width: 100%; max-width: 400px; border-radius: 40px; padding: 40px 30px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); text-align: center; }
         .action-btn { width: 100%; background: linear-gradient(90deg, #ec66ff 0%, #6666ff 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 15px; }
-        .input-field { width: 100%; padding: 12px 12px 12px 42px; border: 1px solid #f0f0f0; border-radius: 12px; outline: none; }
+        
+        /* Updated Input Styling */
+        .input-group { position: relative; width: 100%; margin-bottom: 1rem; }
+        .input-field { width: 100%; padding: 12px 45px 12px 15px; border: 1px solid #f0f0f0; border-radius: 12px; outline: none; transition: border 0.3s; }
+        .input-field:focus { border-color: #6666ff; }
+        
+        .password-toggle { 
+            position: absolute; 
+            right: 15px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            color: #999; 
+            cursor: pointer; 
+            transition: color 0.3s;
+            z-index: 10;
+        }
+        .password-toggle:hover { color: #6666ff; }
+
         .toggle-link { color: #5c59ff; cursor: pointer; font-weight: 600; }
         #toast { visibility: hidden; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #332d5b; color: white; padding: 12px 24px; border-radius: 10px; z-index: 1000; }
         #toast.show { visibility: visible; }
@@ -25,7 +42,6 @@
     <div id="toast"></div>
 
     <script>
-        // YOUR RENDER BACKEND URL
         const API_BASE_URL = "https://library-app-2-ktgf.onrender.com";
         let isLoginView = true;
 
@@ -34,63 +50,97 @@
             container.innerHTML = isLoginView ? `
                 <h1 class="text-2xl font-bold mb-6">Library Login</h1>
                 <form onsubmit="handleAuth(event, '/api/login')">
-                    <input type="email" name="email" class="input-field mb-4" placeholder="Email" required>
-                    <input type="password" name="password" class="input-field mb-4" placeholder="Password" required>
+                    <div class="input-group">
+                        <input type="email" name="email" class="input-field" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="password" id="passwordInput" class="input-field" placeholder="Password" required>
+                        <i class="fa-solid fa-eye password-toggle" id="toggleIcon" onclick="togglePasswordVisibility()"></i>
+                    </div>
                     <button type="submit" class="action-btn" id="btn">Log In</button>
                 </form>
                 <p class="mt-4 text-sm">New? <span class="toggle-link" onclick="toggleView()">Sign Up</span></p>
             ` : `
                 <h1 class="text-2xl font-bold mb-6">Create Account</h1>
                 <form onsubmit="handleAuth(event, '/api/signup')">
-                    <input type="text" name="name" class="input-field mb-4" placeholder="Full Name" required>
-                    <input type="email" name="email" class="input-field mb-4" placeholder="Email" required>
-                    <input type="password" name="password" class="input-field mb-4" placeholder="Password" required>
+                    <div class="input-group">
+                        <input type="text" name="name" class="input-field" placeholder="Full Name" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" name="email" class="input-field" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="password" id="passwordInput" class="input-field" placeholder="Password" required>
+                        <i class="fa-solid fa-eye password-toggle" id="toggleIcon" onclick="togglePasswordVisibility()"></i>
+                    </div>
                     <button type="submit" class="action-btn" id="btn">Sign Up</button>
                 </form>
                 <p class="mt-4 text-sm">Back to <span class="toggle-link" onclick="toggleView()">Login</span></p>
             `;
         }
-async function handleAuth(event, path) {
-    event.preventDefault();
-    const btn = document.getElementById('btn');
-    const data = Object.fromEntries(new FormData(event.target).entries());
 
-    btn.disabled = true;
-    btn.innerText = "Connecting...";
-
-    try {
-        const response = await fetch(`${API_BASE_URL}${path}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',   // ✅ REQUIRED for Flask session
-            body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            showToast(result.message);
-
-            localStorage.setItem('library_user', result.user);
-
-            // Redirect after login OR signup
-            window.location.href = "/dashboard";
-        } else {
-            showToast(result.message || "Auth failed");
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('passwordInput');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                pwdInput.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
 
-    } catch (err) {
-        showToast("Could not reach Render server. Wake it up?");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = isLoginView ? "Log In" : "Sign Up";
-    }
-}
+        async function handleAuth(event, path) {
+            event.preventDefault();
+            const btn = document.getElementById('btn');
+            const data = Object.fromEntries(new FormData(event.target).entries());
 
+            btn.disabled = true;
+            btn.innerText = "Connecting...";
 
-        function toggleView() { isLoginView = !isLoginView; renderView(); }
-        function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.className = "show"; setTimeout(() => t.className = "", 3000); }
+            try {
+                const response = await fetch(`${API_BASE_URL}${path}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast(result.message);
+                    localStorage.setItem('library_user', result.user);
+                    window.location.href = "/dashboard";
+                } else {
+                    showToast(result.message || "Auth failed");
+                }
+            } catch (err) {
+                showToast("Could not reach Render server. Wake it up?");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = isLoginView ? "Log In" : "Sign Up";
+            }
+        }
+
+        function toggleView() { 
+            isLoginView = !isLoginView; 
+            renderView(); 
+        }
+
+        function showToast(m) { 
+            const t = document.getElementById('toast'); 
+            t.innerText = m; 
+            t.className = "show"; 
+            setTimeout(() => t.className = "", 3000); 
+        }
+
         window.onload = renderView;
     </script>
 </body>
 </html>
+
